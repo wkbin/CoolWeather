@@ -122,7 +122,7 @@ public class WeatherActivity extends AppCompatActivity {
         swipeRefresh.setColorSchemeColors(R.color.colorPrimary);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String weatherString = prefs.getString("weather",null);
+        final String weatherString = prefs.getString("weather",null);
         String huangLiString = prefs.getString("huangLi",null);
         String bingPic = prefs.getString("bing_pic",null);
         if (bingPic != null){
@@ -131,9 +131,10 @@ public class WeatherActivity extends AppCompatActivity {
             loadBingPic();
         }
         if (weatherString != null){
-            Log.d("WeatherActivity","有天气缓存");
+            Log.d("WeatherActivity","有天气缓存,weatherString = "+weatherString);
             // 有缓存时直接解析天气数据
             Weather weather = new Gson().fromJson(weatherString,Weather.class);
+            mWeatherId = weather.cityInfo.cityId;
             showWeatherInfo(weather);
         }else {
             // 无缓存时去服务器查询天气
@@ -157,6 +158,7 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onRefresh() {
                 requestWeather(mWeatherId);
+                mDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
                 requestHuangLi(mDate);
             }
         });
@@ -192,6 +194,7 @@ public class WeatherActivity extends AppCompatActivity {
                             SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
                             editor.putString("weather",responseText);
                             editor.apply();
+                            mWeatherId = weather.cityInfo.cityId;
                             showWeatherInfo(weather);
                         }else{
                             Toast.makeText(WeatherActivity.this,"获取天气信息失败",Toast.LENGTH_SHORT).show();
